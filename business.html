@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Directory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3a5f 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .search-section {
+            background: white;
+            padding: 25px;
+            margin: -25px 20px 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2c5aa0;
+            box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+        }
+
+        .search-select {
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+            background: white;
+            min-width: 180px;
+        }
+
+        .btn-search {
+            padding: 10px 22px;
+            background: #2c5aa0;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .btn-search:hover {
+            background: #1e3a5f;
+        }
+
+        .results-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 12px;
+        }
+
+        .filter-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.6;
+        }
+
+        .filter-tag .remove:hover {
+            opacity: 1;
+        }
+
+        .results-count {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Categories Grid - Directory Page */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1px;
+            background: #ddd;
+            border: 1px solid #ddd;
+            margin-bottom: 40px;
+        }
+
+        .category-item {
+            background: white;
+            padding: 18px;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid #ddd;
+        }
+
+        .category-item:hover {
+            background: #f9f9f9;
+        }
+
+        .category-name {
+            font-size: 14px;
+            color: #2c5aa0;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .category-count {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1px;
+            background: #ddd;
+            border: 1px solid #ddd;
+        }
+
+        .results-grid.hidden {
+            display: none;
+        }
+
+        .member-item {
+            background: white;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-item:hover {
+            background: #f9f9f9;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .member-logo-section {
+            height: 120px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+        }
+
+        .member-logo {
+            max-width: 90%;
+            max-height: 90%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .member-logo-placeholder {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 11px;
+        }
+
+        .member-details {
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .member-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .member-address {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .member-address-icon {
+            color: #2c5aa0;
+            flex-shrink: 0;
+            margin-top: 2px;
+            font-size: 12px;
+        }
+
+        .member-phone {
+            font-size: 12px;
+            color: #2c5aa0;
+            margin-bottom: 8px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .member-phone a {
+            color: #2c5aa0;
+            text-decoration: none;
+        }
+
+        .member-phone a:hover {
+            text-decoration: underline;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: auto;
+            padding-top: 8px;
+        }
+
+        .action-link {
+            display: inline;
+            color: #2c5aa0;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: text-decoration 0.2s;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .action-link::after {
+            content: " | ";
+            margin: 0 4px;
+        }
+
+        .action-link:last-child::after {
+            content: "";
+            margin: 0;
+        }
+
+        /* Detail View */
+        .detail-view {
+            display: none;
+        }
+
+        .detail-view.active {
+            display: block;
+        }
+
+        .back-button {
+            margin-bottom: 20px;
+        }
+
+        .back-button a {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .back-button a:hover {
+            text-decoration: underline;
+        }
+
+        .detail-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 30px;
+            max-width: 600px;
+        }
+
+        .detail-logo {
+            width: 150px;
+            height: 150px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .detail-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #333;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-input,
+            .search-select {
+                width: 100%;
+            }
+
+            .categories-grid,
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .categories-grid,
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Member Directory</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="What are you looking for?">
+                <select id="categorySelect" class="search-select">
+                    <option value="">Business Category</option>
+                </select>
+                <button class="btn-search" onclick="performSearch()">Search</button>
+            </div>
+        </div>
+
+        <!-- Directory Page -->
+        <div id="directoryPage" class="directory-page">
+            <div class="categories-grid" id="categoriesGrid"></div>
+        </div>
+
+        <!-- Results Page -->
+        <div id="resultsPage" class="results-page hidden" style="display:none;">
+            <div class="back-button">
+                <a onclick="goBack()">← Back to Directory</a>
+            </div>
+
+            <div class="results-toolbar">
+                <div class="filter-tags" id="filterTags"></div>
+                <div class="results-count">Results: <span id="resultsCount">0</span></div>
+            </div>
+
+            <div class="results-grid" id="resultsGrid"></div>
+            <div id="emptyState"></div>
+        </div>
+
+        <!-- Detail Page -->
+        <div id="detailPage" class="detail-view">
+            <div class="back-button">
+                <a onclick="goToResults()">← Back to Results</a>
+            </div>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            { name: "Accountants", slug: "accountants", count: 5 },
+            { name: "Advertising & Marketing", slug: "advertising", count: 8 },
+            { name: "Agricultural, Fishing & Forestry", slug: "agriculture", count: 4 },
+            { name: "Antiques & Vintage", slug: "antiques", count: 7 },
+            { name: "Architecture & Design", slug: "architecture", count: 9 },
+            { name: "Art Galleries", slug: "art-galleries", count: 15 },
+            { name: "Arts, Culture & Entertainment", slug: "arts", count: 18 },
+            { name: "Auto Body, Parts & Repair", slug: "auto-repair", count: 8 },
+            { name: "Auto Dealers", slug: "auto-dealers", count: 6 },
+            { name: "Banks", slug: "banks", count: 7 },
+            { name: "Beauty, Salon & Beauty Services", slug: "beauty", count: 11 },
+            { name: "Beverages", slug: "beverages", count: 9 },
+            { name: "Broadcasting Stations", slug: "broadcasting", count: 3 },
+            { name: "Business & Professional Services", slug: "business-services", count: 25 },
+            { name: "Cafe", slug: "cafe", count: 14 },
+            { name: "Caterers", slug: "caterers", count: 12 },
+            { name: "Chiropractors", slug: "chiropractors", count: 8 },
+            { name: "Civic & Social Organizations", slug: "civic", count: 15 },
+            { name: "Clothing & Shoe Stores", slug: "clothing", count: 18 },
+            { name: "Community & Human Services", slug: "community-services", count: 22 },
+            { name: "Construction & Home Improvement", slug: "construction", count: 28 },
+            { name: "Consultants", slug: "consultants", count: 16 },
+            { name: "Dentists", slug: "dentists", count: 12 },
+            { name: "Education", slug: "education", count: 18 },
+            { name: "Entertainment & Theaters", slug: "entertainment", count: 10 },
+            { name: "Exercise & Fitness Clubs", slug: "fitness", count: 11 },
+            { name: "Finance & Insurance", slug: "finance", count: 19 },
+            { name: "Flooring", slug: "flooring", count: 8 },
+            { name: "Florists", slug: "florists", count: 9 },
+            { name: "Furniture", slug: "furniture", count: 10 }
+        ];
+
+        const members = {
+            "accountants": [
+                { name: "Sonoma Valley Tax Service", address: "PO Box 572, 259 West Spain Street, Sonoma, CA 95476", phone: "(707) 928-4400", email: "info@sonomataxtax.com", website: "sonomataxtax.com", logo: "https://via.placeholder.com/100/2c5aa0/ffffff?text=Tax" },
+                { name: "Peggy Daley Bookkeeping Services", address: "513 Curtin Lane, Sonoma, CA 95476", phone: "(415) 722-2273", email: "peggy@daleybookeeping.com", website: "daleybookeeping.com", logo: "https://via.placeholder.com/100/4a90e2/ffffff?text=PDB" },
+                { name: "Kelley Ritter Bookkeeping", address: "281 Meadowood Ln, Sonoma, CA 95476", phone: "7073284576", email: "kelley@ritterbookeeping.com", website: "ritterbookeeping.com", logo: "https://via.placeholder.com/100/7b68ee/ffffff?text=KRB" },
+                { name: "Valley Accounting Group", address: "123 Main Street, Sonoma, CA 95476", phone: "(707) 555-0101", email: "info@valleyaccounting.com", website: "valleyaccountinggroup.com", logo: "https://via.placeholder.com/100/20b2aa/ffffff?text=VAG" },
+                { name: "Premier Tax Services", address: "456 Broadway, Sonoma, CA 95476", phone: "(707) 555-0102", email: "contact@premiertax.com", website: "premiertaxservices.com", logo: "https://via.placeholder.com/100/ff6b6b/ffffff?text=PTS" }
+            ],
+            "advertising": [
+                { name: "Creative Marketing Solutions", address: "234 Market Street, Sonoma, CA 95476", phone: "(707) 555-0201", email: "hello@creativemkt.com", website: "creativemarketingsolutions.com", logo: "https://via.placeholder.com/100/ffa500/ffffff?text=CMS" },
+                { name: "Digital Brand Agency", address: "567 Plaza Avenue, Sonoma, CA 95476", phone: "(707) 555-0202", email: "info@digitalbrand.com", website: "digitalbrandagency.com", logo: "https://via.placeholder.com/100/1e90ff/ffffff?text=DBA" }
+            ],
+            "auto-repair": [
+                { name: "Sonoma Auto Care", address: "1919 Service Road, Sonoma, CA 95476", phone: "(707) 555-1201", email: "service@sonomaauto.com", website: "sonomaautocare.com", logo: "https://via.placeholder.com/100/dc143c/ffffff?text=SAC" },
+                { name: "Valley Body Shop", address: "2020 Repair Lane, Sonoma, CA 95476", phone: "(707) 555-1202", email: "info@valleybody.com", website: "valleybodyshop.com", logo: "https://via.placeholder.com/100/8b0000/ffffff?text=VBS" }
+            ],
+            "banks": [
+                { name: "Sonoma Community Bank", address: "2525 Financial Plaza, Sonoma, CA 95476", phone: "(707) 555-1401", email: "info@sonomabank.com", website: "sonomacommunitybank.com", logo: "https://via.placeholder.com/100/2c5aa0/ffffff?text=SCB" },
+                { name: "Valley National Bank", address: "2626 Banking Street, Sonoma, CA 95476", phone: "(707) 555-1402", email: "service@valleynational.com", website: "valleynationalbank.com", logo: "https://via.placeholder.com/100/1a3a52/ffffff?text=VNB" }
+            ],
+            "beauty": [
+                { name: "Sonoma Salon & Spa", address: "2828 Beauty Boulevard, Sonoma, CA 95476", phone: "(707) 555-1501", email: "book@sonomasalon.com", website: "sonomasalonspa.com", logo: "https://via.placeholder.com/100/ff69b4/ffffff?text=SSS" },
+                { name: "Valley Hair Studio", address: "2929 Style Street, Sonoma, CA 95476", phone: "(707) 555-1502", email: "info@valleyhair.com", website: "valleyhairstudio.com", logo: "https://via.placeholder.com/100/ff1493/ffffff?text=VHS" }
+            ],
+            "cafe": [
+                { name: "Sonoma Coffee House", address: "4646 Cafe Street, Sonoma, CA 95476", phone: "(707) 555-2101", email: "info@sonomacoffee.com", website: "sonomacoffeehouse.com", logo: "https://via.placeholder.com/100/8b4513/ffffff?text=SCH" },
+                { name: "Valley Espresso Bar", address: "4747 Brew Lane, Sonoma, CA 95476", phone: "(707) 555-2102", email: "hello@valleyespresso.com", website: "valleyespressobar.com", logo: "https://via.placeholder.com/100/a0522d/ffffff?text=VEB" }
+            ]
+        };
+
+        let currentCategory = '';
+        let currentResults = [];
+
+        function populateCategories() {
+            const grid = document.getElementById('categoriesGrid');
+            const select = document.getElementById('categorySelect');
+            
+            grid.innerHTML = categories.map(cat => `
+                <div class="category-item" onclick="selectCategory('${cat.slug}', '${cat.name}')">
+                    <div class="category-name">${cat.name}</div>
+                    <div class="category-count">${cat.count} Results</div>
+                </div>
+            `).join('');
+
+            select.innerHTML = '<option value="">Business Category</option>' + 
+                categories.map(cat => `<option value="${cat.slug}">${cat.name}</option>`).join('');
+        }
+
+        function selectCategory(slug, name) {
+            currentCategory = slug;
+            showResults(slug, name);
+        }
+
+        function showResults(slug, name) {
+            document.getElementById('directoryPage').style.display = 'none';
+            document.getElementById('detailPage').classList.remove('active');
+            document.getElementById('resultsPage').style.display = 'block';
+
+            currentResults = members[slug] || [];
+            
+            document.getElementById('filterTags').innerHTML = `
+                <div class="filter-tag">${name}<span class="remove" onclick="goBack()">×</span></div>
+            `;
+
+            displayResults();
+        }
+
+        function displayResults() {
+            const count = currentResults.length;
+            document.getElementById('resultsCount').textContent = count;
+
+            if (count === 0) {
+                document.getElementById('resultsGrid').innerHTML = '';
+                document.getElementById('emptyState').innerHTML = '<div class="empty-state"><h3>No results found</h3></div>';
+                return;
+            }
+
+            document.getElementById('emptyState').innerHTML = '';
+
+            const gridHtml = currentResults.map(m => `
+                <div class="member-item" onclick="showDetail('${m.name.replace(/'/g, "\\'")}', '${m.address.replace(/'/g, "\\'")}', '${m.phone}', '${m.email}', '${m.website}')">
+                    <div class="member-logo-section">
+                        ${m.logo ? `<img src="${m.logo}" alt="${m.name}" class="member-logo">` : '<div class="member-logo-placeholder">No Logo</div>'}
+                    </div>
+                    <div class="member-details">
+                        <div class="member-name">${m.name}</div>
+                        <div class="member-address">
+                            <span class="member-address-icon">📍</span>
+                            <span>${m.address}</span>
+                        </div>
+                        <div class="member-phone">
+                            <span>📞</span>
+                            <a href="tel:${m.phone.replace(/\D/g, '')}" onclick="event.stopPropagation()">${m.phone}</a>
+                        </div>
+                        <div class="member-actions">
+                            <a href="mailto:${m.email}" onclick="event.stopPropagation()">Send Email</a>
+                            <a href="https://${m.website}" target="_blank" onclick="event.stopPropagation()">Visit Website</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('resultsGrid').innerHTML = gridHtml;
+        }
+
+        function performSearch() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const categorySlug = document.getElementById('categorySelect').value;
+            
+            if (!keyword && !categorySlug) {
+                alert('Please enter a keyword or select a category');
+                return;
+            }
+
+            if (categorySlug) {
+                const cat = categories.find(c => c.slug === categorySlug);
+                if (cat) {
+                    selectCategory(cat.slug, cat.name);
+                }
+            } else if (keyword) {
+                searchByKeyword(keyword);
+            }
+        }
+
+        function searchByKeyword(keyword) {
+            let searchResults = [];
+            
+            for (let categorySlug in members) {
+                const categoryMembers = members[categorySlug];
+                const filtered = categoryMembers.filter(member => {
+                    return member.name.toLowerCase().includes(keyword) ||
+                           member.address.toLowerCase().includes(keyword) ||
+                           member.email.toLowerCase().includes(keyword);
+                });
+                searchResults = searchResults.concat(filtered);
+            }
+
+            currentResults = searchResults;
+            document.getElementById('directoryPage').style.display = 'none';
+            document.getElementById('detailPage').classList.remove('active');
+            document.getElementById('resultsPage').style.display = 'block';
+
+            document.getElementById('filterTags').innerHTML = `
+                <div class="filter-tag">Search: ${keyword}<span class="remove" onclick="goBack()">×</span></div>
+            `;
+
+            displayResults();
+        }
+
+        function showDetail(name, address, phone, email, website) {
+            document.getElementById('detailPage').classList.add('active');
+            document.getElementById('resultsPage').style.display = 'none';
+
+            document.getElementById('detailContent').innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-logo">[Logo]</div>
+                    <div class="detail-name">${name}</div>
+                    <div class="detail-item">
+                        <div class="detail-label">Address</div>
+                        <div class="detail-value">${address}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value"><a href="tel:${phone.replace(/\D/g, '')}" style="color: #2c5aa0; text-decoration: none;">${phone}</a></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value"><a href="mailto:${email}" style="color: #2c5aa0; text-decoration: none;">${email}</a></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Website</div>
+                        <div class="detail-value"><a href="https://${website}" target="_blank" style="color: #2c5aa0; text-decoration: none;">${website}</a></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function goToResults() {
+            document.getElementById('detailPage').classList.remove('active');
+            document.getElementById('resultsPage').style.display = 'block';
+        }
+
+        function goBack() {
+            document.getElementById('directoryPage').style.display = 'block';
+            document.getElementById('resultsPage').style.display = 'none';
+            document.getElementById('detailPage').classList.remove('active');
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categorySelect').value = '';
+        }
+
+        populateCategories();
+    </script>
+</body>
+</html>
